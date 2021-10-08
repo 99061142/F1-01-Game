@@ -1,1 +1,1 @@
-# F1-01-Game
+# School assignment
