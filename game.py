@@ -1,118 +1,105 @@
-import random
+# Array for the sums, and the time the user gets
+sum_information = {
+    "questions": {
+        "easy": [
+            "3 - 6",
+            "55 + 31",
+            "74 + 31",
+            "101 - 54",
+            "-5 + -4"
+        ],
 
+        "medium": [
+            "-5 - 47",
+            "64 + 306",
+            "6 * 23",
+            "64 - 87",
+            "789 * 2"
+        ],
 
-# Array for the rock, paper and scissors game
-rps_information = {
-    "steen": {
-        "lose": "schaar"
+        "hard": [
+            "342 / 2",
+            "443 + 87",
+            "593 * 3",
+            "396 / 3",
+            "583 - 957"
+        ]
     },
 
-    "papier": {
-        "lose": "steen"
-    },
-
-    "schaar": {
-        "lose": "papier"
+    "time": {
+        "easy": 5,
+        "medium": 15,
+        "hard": 30
     }
 }
 
+def sum_questions(difficulty):
+    
+    questions = sum_information["questions"][difficulty] # Array with the questions
+    time = sum_information["time"][difficulty] # Time for the user to answer the question
+    
+    for sum_str in questions:
+    
+        question = 'whats "' + sum_str + '" ?: '
 
-# Show the user why he lost
-def loseScreen(info):
-    print("\n"
-        "------------------------",
-        info,
-        "------------------------",
-    "\n")
-    exit()
+        user_chosen = False
+    
+        while not user_chosen: 
+            user_answer = input(question)
+
+
+            try:
+                user_answer = int(user_answer)
+
+            except:
+                print("Choose a number")
+
+            else:
+                user_chosen = True
+
+                answer = eval(sum_str)
+
+                if user_answer == answer:
+                    print("Thats correct!")
+                
+                else:
+                    fail_message = "Thats not correct, the answer is: " + str( int(answer) )
+
+                    print(fail_message)
 
 
 
 
-# Guess higher than the enemy (number between 1/6)
-def diceGuessing():
+def startScreen():
+    
+    difficulties = list ( sum_information["questions"].keys() ) # Makes an array of all the keys of the difficulties
 
-    dice_roll = True # Loop through the question
+    difficulties_str = ", ".join(difficulties[:-1]) + " or " + difficulties[-1] # Add a ',' at the end of the value, and if its the last value it adds a 'or'
 
-    while dice_roll:
 
-        diceAmount_enemy = random.randint(1, 6) # Choose a number between 1 and 6
+    print("Which mode you want to play?")
 
-        user_guess = input("Raad een getal wat gelijk of hoger is wat de tegenstander heeft gegooid (getal van 1 t/m 6): ")
+    choosing = True
+
+    while choosing:
         
-        # Check if the user chose a number between 1 and 6
+        question = "You have a choice between: " + difficulties_str + ": "
+        
+        difficulty = input(question).lower()
+
+
         try:
-            user_guess = int(user_guess)
-            if user_guess >= 1 and user_guess <= 6:
-                return True
+            difficulties.index(difficulty)
 
         except: 
-            print("Vul een geldig getal in")
+            print("Choose between the 3 modes")
 
-        # If it did go correctly
-        else:
-
-            # If the user guessed the same or higher than the enemy
-            if user_guess >= diceAmount_enemy:
-                print("Je hebt gewonnen")
-                
-                dice_roll = False
-
-            
-            # If the user guessed lower than the enemy
-            else:
-                
-                info = "Je hebt verloren, de tegenstander heeft '", diceAmount_enemy, "' gegooid, en jij gokte lager, namelijk '" + user_guess + "'"
-
-                loseScreen(info)
+        else:   
+            choosing = False
 
 
+    return difficulty
 
 
-# Rock paper scissor game
-def rpsGuessing():
-
-    rps_roll = True # Loop through the question 
-
-    while rps_roll:
-
-        rps_randomNumber = random.randrange(3) # Get a random number
-        
-        rps_options = list ( rps_information.keys() ) # Make a array from the 3 options 
-        rps_enemy = rps_options[rps_randomNumber] # Get a random option out of the array
-
-
-        rps_user = input("Kies steen, papier of schaar: ")
-        
-        # Check if the user chose between the 3 options
-        try: 
-            rps_options.index(rps_user)
-
-        except:
-            print("Kies een geldige optie")
-        
-        # If it did go correctly   
-        else:
-            
-            # If the user guess the same as the enemy
-            if rps_user == rps_enemy:
-                print("De tegenstander koos dezelfde optie als jou, kies opnieuw")
-                
-
-            # If the loses
-            elif rps_user == rps_information[rps_enemy]["lose"]:
-
-                # Go to the lose screen, with the text given    
-                info = "Je hebt verloren, de tegenstander koos '" + rps_enemy + "' en jij koos '" + rps_user + "'"
-                
-                loseScreen(info)
-
-            # If the user wins
-            else:
-                print("Je hebt gewonnen")
-
-                rps_roll = False  # End the loop
-                
-                diceGuessing() # Go to the next game
-
-rpsGuessing() # Start the first game
+difficulty = startScreen()
+sum_questions(difficulty)
