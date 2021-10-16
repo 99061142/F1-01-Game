@@ -1,41 +1,83 @@
-easy_lost = False # If the user is on the lowest difficulty
-
-# Array for the sums, and the time the user gets
+# Array for the questions, and the information about the fails
 sum_information = {
-    "questions": {
-        "easy": [
-            "3 - 6",
-            "55 + 31",
-            "74 + 31",
-            "101 - 54",
-            "-5 + -4"
+    "easy": {
+        "questions": [
+            "1 + 1",
+            "1 + 1",
+            "1 + 1",
+            "1 + 1",
+            "1 + 1"
         ],
 
-        "medium": [
-            "-5 - 47",
-            "64 + 306",
-            "6 * 23",
-            "64 - 87",
-            "789 * 2"
-        ],
+        "max_fails": 0,
 
-        "hard": [
-            "342 / 2",
-            "443 + 87",
-            "593 * 3",
-            "396 / 3",
-            "583 - 957"
-        ]
+        "user_fails": 0
     },
 
-    "max_fails": {
-        "easy": 0,
-        "medium": 0,
-        "hard": 1
+    "medium": {
+        "questions": [
+            "1 + 1",
+            "1 + 1",
+            "1 + 1",
+            "1 + 1",
+            "1 + 1"
+        ],
+
+        "max_fails": 0,
+
+        "user_fails": 0
+    },
+
+    "hard": {
+        "questions": [
+            "1 + 1",
+            "1 + 1",
+            "1 + 1",
+            "1 + 1",
+            "1 + 1"
+        ],
+
+        "max_fails": 1,
+
+        "user_fails": 0
     }
 }
 
-difficulties = list ( sum_information['questions'].keys() ) # Makes an array of all the possible difficulties
+difficulties = list ( sum_information.keys() ) # All the difficulties
+game_over = False # Check if the user lost the easy questions
+
+
+
+# Ask the user which mode he/she wants to begin with
+
+def startScreen():
+
+    choosing = True # Check if the user must choose an answer
+
+    difficulties_str = ", ".join(difficulties[:-1]) + " or " + difficulties[-1] # All the difficulty options
+
+
+    print("Which mode you want to play?")
+
+
+    while choosing:
+
+        question = "You have a choice between: " + difficulties_str + ": "
+        
+        difficulty = input(question).lower()
+
+
+        try:
+            difficulties.index(difficulty) # Check if the chosen difficulty is an option
+
+        except: 
+            print("Choose between the given options")
+
+        else:   
+            choosing = False # Stop the question
+
+
+    return difficulty # Return the difficulty the user wants to start with
 
 
 
@@ -44,23 +86,31 @@ difficulties = list ( sum_information['questions'].keys() ) # Makes an array of 
 
 def sum_questions(difficulty):
 
+    user_lost = False
     change_difficulty = False
 
-    questions = sum_information['questions'][difficulty] # Array with the questions
-    max_fails = sum_information['max_fails'][difficulty] # Max fails the user can make for the difficulty
+    questions = sum_information[difficulty]['questions'] # Questions
+    max_fails = sum_information[difficulty]['max_fails'] # Max amount of fails
 
 
     print('This questions are for the difficulty: "' + difficulty + '"')
 
     
     for sum_str in questions:
+        
+        user_fails = sum_information[difficulty]['user_fails'] # Users failed amount
     
-        user_chosen = False
+        user_chosen = False  # Check if the user must choose an answer
 
+        
         question = 'whats "' + sum_str + '" ?: '
     
         while not user_chosen and not change_difficulty: 
-            
+
+            # Say how many fails the user has left
+            max_fails_text = "You can only fail " + str(max_fails - user_fails) + " more time(s)"
+            print(max_fails_text) 
+
             user_answer = input(question)
 
 
@@ -71,89 +121,89 @@ def sum_questions(difficulty):
                 print("Choose a number")
 
             else:
-                user_chosen = True
+                user_chosen = True # Stop the question
 
-                answer = eval(sum_str) # Calculate the sum
+                answer = eval(sum_str) # Calculate the answer
 
-
+                # If the user has it correct
                 if user_answer == answer:
                     print("Thats correct!")
                 
+                # If the user failed
                 else:
-                    fail_message = "That is not correct, the answer was: " + str( int(answer) )
+                    sum_information[difficulty]['user_fails'] += 1 # Add 1 fail to the total failed answers of the user
 
+                    # Print the correct answer
+                    fail_message = "That is not correct, the answer was: " + str( int(answer) )
                     print(fail_message)
 
+                    # If the user has made the max amount of fails
+                    if user_fails == max_fails:
+                        user_lost = True
 
-                    if max_fails > 0:
-                        max_fails -= 1 # Decrease the fails the user has
-
-                    else: 
-                        try:
-                            difficulty = difficulties.index(difficulty - 1) # Check if the difficulty could be decreased
-                        
-                        except: 
-                            easy_lost = True
-
-                        else: 
-                            easy_lost = False
-
-                        
                         change_difficulty = True # Go out of the loop with the questions
 
+
     else:
-        return easy_lost # Return if the users difficulty must be decreaed
+        return user_lost # Return if the user won / lost
 
 
 
-# Change the difficulty for the questions
 
-def change_difficulty(difficulty, user_lost):
+# Check if the user lost the easiest difficulty
 
-    question_index = difficulties.index(difficulty) # Get the index of the difficulty
+def check_difficulty(difficulty):
 
-    # Check which difficulty the user has, and decrease it
+    # If the user lost the easiest difficulty
+    if difficulty == difficulties[0] and user_lost:
+        easy_lost = True
     
-    if user_lost:
-        difficulty = difficulties[question_index - 1] # Decrease the difficulty
-    
+    else: 
+        easy_lost = False
+
+
+    return easy_lost # Return if the user lost the easiest difficulty
+
+
+
+# Check if the difficulty must be updated
+
+def update_difficulty():
+
+    max_fails = sum_information[difficulty]['max_fails'] # Max fails the user can make for the difficulty
+    user_fails = sum_information[difficulty]['user_fails'] # Amount of the failed answers of the user
+
+    # If the user won the hard round
+    if difficulty == difficulties[-1] and user_fails <= max_fails:
+        must_update = False
+
     else:
-        difficulty = difficulties[question_index + 1] # Increase the difficulty
-
-    return difficulty
+        must_update = True
 
 
+    return must_update # Return if the difficulty must be updated
 
 
-# Ask the user which mode he wants to begin with
-
-def startScreen():
-
-    difficulties_str = ", ".join(difficulties[:-1]) + " or " + difficulties[-1] # Add a ',' at the end of the value, and if its the last value it adds a 'or'
 
 
-    print("Which mode you want to play?")
+# Update the difficulty
 
-    choosing = True
+def change_difficulty(difficulty):   
 
-    while choosing:
-        
-        question = "You have a choice between: " + difficulties_str + ": "
-        
-        difficulty = input(question).lower()
+    difficulty_index = difficulties.index(difficulty) # Position of the difficulty 
+    max_fails = sum_information[difficulty]['max_fails'] # Max fails the user can make for the difficulty
+    user_fails = sum_information[difficulty]['user_fails'] # Amount of the failed answers of the user
 
 
-        try:
-            difficulties.index(difficulty)
+    # If the user failed less than the max fails amount
+    if user_fails <= max_fails:
+        difficulty = difficulties[difficulty_index + 1] # Increase the difficulty
 
-        except: 
-            print("Choose between the 3 modes")
-
-        else:   
-            choosing = False
+    else:
+        difficulty = difficulties[difficulty_index -1] # Decrease the difficulty
 
 
-    return difficulty
+    return difficulty # Return the new difficulty
 
 
 
@@ -161,11 +211,24 @@ def startScreen():
 difficulty = startScreen() # Ask the user which mode he wants to begin with
 
 
-while not easy_lost:
+while not game_over:
     user_lost = sum_questions(difficulty) # Ask the questions to the user
 
-    if difficulty != "easy":
-        difficulty = change_difficulty(difficulty, user_lost) # Change the difficulty with the result of the user
+    easy_lost = check_difficulty(difficulty) # Check if the user lost the easy round
 
-    else:
-        easy_lost = True
+    if not easy_lost:
+        must_update = update_difficulty() # Check if the difficulty must be updated
+        
+        # If the user did not win the hard round
+        if must_update:
+            difficulty = change_difficulty(difficulty) # Increase / decrease the difficulty
+
+        else:
+            print("You win!")
+            game_over = True # Stop the questions
+
+
+    # If the user lost the easy round, or the chosen difficulty was already lost
+    if easy_lost or sum_information[difficulty]['user_fails'] > sum_information[difficulty]['max_fails']:   
+        print('Game over! \n your highest difficulty is: "' + difficulty + '"')
+        game_over = True # Stop the questions
